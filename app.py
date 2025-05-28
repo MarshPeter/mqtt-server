@@ -30,8 +30,21 @@ mqtt_client.loop_start()
 @app.route('/broadcast', methods=['POST'])
 def broadcast_message():
     data = request.get_json()
+    payload = {}
     message = data.get("message", "")
-    mqtt_client.publish(MQTT_TOPIC, str({"message": message}).replace("'", '"'))
+
+    # We are turning on or turning off the system
+    if "systemState" in data:
+        payload["systemState"] = data.get("systemState", "")
+
+    # At this point we have everything needed to discord notify
+    if "notifReady":
+        payload.update(data)
+    # At this point one of the bowls needs to be filled, we need the other bowl's info
+    elif "notifWater" in data or "notifFood" in data:
+        payload.update(data)
+
+    mqtt_client.publish(MQTT_TOPIC, str(payload).replace("'", '"'))
     return jsonify({"status": "broadcasted", "message": message})
 
 @app.route('/')

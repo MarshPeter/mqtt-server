@@ -37,11 +37,14 @@ def broadcast_message():
     if "systemState" in data:
         payload["systemState"] = data.get("systemState", "")
 
-    # At this point we have everything needed to discord notify
-    if "notifReady":
+    # At this point one of the bowls needs to be filled, we need the other bowl's info to give a complete message, if we have both then the water bowl will just send it, it may not look obvious but this just works
+    if "notifWater" in data or "notifFood" in data:
         payload.update(data)
-    # At this point one of the bowls needs to be filled, we need the other bowl's info
-    elif "notifWater" in data or "notifFood" in data:
+
+    if "requestFoodData" in data:
+        payload["requestFoodData"] = "true"
+
+    if "requestedFood" in data:
         payload.update(data)
 
     mqtt_client.publish(MQTT_TOPIC, str(payload).replace("'", '"'))
